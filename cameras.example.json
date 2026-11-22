@@ -1,0 +1,7 @@
+[
+    {
+        "id": "driveway",
+        "name": "Driveway",
+        "url": "rtsps://camera.example:7441/REPLACE_WITH_STREAM_TOKEN?enableSrtp"
+    }
+]

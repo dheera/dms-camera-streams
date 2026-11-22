@@ -1,0 +1,14 @@
+{
+    "id": "cameraStreams",
+    "name": "Camera Streams",
+    "description": "Live RTSP and RTSPS cameras in your Dux Modular Shell bar",
+    "version": "1.1.0",
+    "author": "Dheera",
+    "type": "widget",
+    "capabilities": ["dankbar-widget"],
+    "component": "./CameraWidget.qml",
+    "settings": "./CameraSettings.qml",
+    "icon": "videocam",
+    "requires_dms": ">=2.1.0",
+    "permissions": ["settings_read", "settings_write"]
+}

@@ -1,0 +1,4 @@
+cameras.local.json
+*.log
+__pycache__/
+.DS_Store
