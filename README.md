@@ -1,6 +1,6 @@
 # dms-camera-streams
 
-**Camera Streams** is a bar plugin for **Dux Modular Shell (DMS)**. Tap the camera icon to watch a live RTSP/RTSPS stream, then tap a camera name to switch feeds.
+**Camera Streams** is a bar plugin for **Dux Modular Shell (DMS)**. Tap the camera icon to watch a live RTSP/RTSPS stream or a periodically refreshed HTTP(S) snapshot image, then tap a camera name to switch feeds.
 
 The repository is [dheera/dms-camera-streams](https://github.com/dheera/dms-camera-streams). Dux Modular Shell is the official name since [DMS 2.1, released November 4, 2026](https://duxlabs.dev/blog/v2-1-release), and DMS remains its official abbreviation. The plugin's stable manifest ID is `cameraStreams`; its install directory uses that ID. This is an independent community plugin.
 
@@ -11,6 +11,7 @@ The repository is [dheera/dms-camera-streams](https://github.com/dheera/dms-came
 - Camera settings with add, edit, and remove controls and masked stream URLs.
 - Mute, stop/start, reconnect, and optional standalone playback in mpv.
 - Fullscreen video on the bar's display. Choose **Fullscreen** in the viewer; **Escape**, **F11**, or **Exit fullscreen** returns to the popout. Left/right switches cameras and **M** toggles audio.
+- HTTP(S) snapshot cameras (a URL that returns a JPEG or PNG), reloaded every 30 seconds by default while the viewer is open. The interval is adjustable from 5 to 300 seconds in settings.
 - Automatic reconnection with backoff; connection and stale-video timeouts.
 - Releases the stream when the popout closes and while the session is locked.
 
@@ -45,7 +46,7 @@ To remove it, remove its bar widget, disable it in Plugins, and delete the insta
 
 ## Cameras
 
-Use the settings editor to enter a name and a complete `rtsp://` or `rtsps://` URL. URLs are passed to the player unchanged, including authentication, stream tokens, and query flags such as `?enableSrtp`. The plugin never converts encrypted streams to plaintext.
+Use the settings editor to enter a name and a complete `rtsp://`, `rtsps://`, `http://` or `https://` URL. RTSP URLs play live video. HTTP(S) URLs are treated as still-image cameras: the URL must return a JPEG or PNG, which is fetched when the viewer opens and then reloaded at the snapshot refresh interval, keeping the previous image on screen until the next one has loaded. Snapshot cameras have no audio and cannot be opened in mpv. URLs are passed to the player unchanged, including authentication, stream tokens, and query flags such as `?enableSrtp`. The plugin never converts encrypted streams to plaintext.
 
 For local defaults, copy `cameras.example.json` to `cameras.local.json` and edit the values. This file is ignored by Git. Saved camera settings take precedence over defaults, including a deliberately empty camera list.
 
@@ -57,7 +58,7 @@ Only the selected camera is decoded. The embedded player stops when the popout c
 
 If the preview is unavailable, check Qt Multimedia and the FFmpeg backend. The picker and settings still load without that module. Retry the stream or use **Open in mpv**. For RTSPS feeds, keep the camera's exact exported URL. Cameras with unsupported transport, codecs, or TLS configuration may work differently in Qt and mpv.
 
-The player retries after 2, 4, 8, 16, then 30 seconds and releases the failed source between attempts. Disable automatic reconnect in settings if preferred. It does not record video or create image snapshots.
+The player retries after 2, 4, 8, 16, then 30 seconds and releases the failed source between attempts. Disable automatic reconnect in settings if preferred. Snapshot cameras use the same backoff when an image fails to load or takes longer than 15 seconds. The plugin does not record video or save images.
 
 ## Development checks
 

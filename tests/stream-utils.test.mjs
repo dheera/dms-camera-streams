@@ -11,6 +11,8 @@ test('preserves RTSPS tokens, encoded credentials, query flags, and IPv6', () =>
         'rtsps://10.0.0.5:7441/opaqueToken?enableSrtp',
         'rtsp://user:p%40ss@camera.lan:554/stream?profile=main&video=1',
         'rtsps://[2001:db8::1]:7441/live',
+        'http://192.168.1.20/snapshot.jpg',
+        'https://user:p%40ss@camera.lan:8443/cgi-bin/snap.cgi?channel=1&t=x',
     ]) {
         assert.equal(utils.validateCamera('Driveway', url), '');
         assert.equal(utils.normalizeCameras([{name: 'Driveway', url}])[0].url, url);
@@ -18,9 +20,23 @@ test('preserves RTSPS tokens, encoded credentials, query flags, and IPv6', () =>
 });
 
 test('rejects missing names, hosts, unsupported schemes and whitespace', () => {
-    for (const url of ['', 'https://camera/live', 'file:///etc/passwd', 'rtsp://', 'rtsp:///live', 'rtsp://camera/live\nsecret', 'rtsp://camera/a b'])
+    for (const url of ['', 'ftp://camera/snap.jpg', 'file:///etc/passwd', 'https://', 'http://camera/a b', 'rtsp://', 'rtsp:///live', 'rtsp://camera/live\nsecret', 'rtsp://camera/a b'])
         assert.notEqual(utils.validateCamera('Camera', url), '');
     assert.notEqual(utils.validateCamera('  ', 'rtsp://camera/live'), '');
+});
+
+test('classifies HTTP(S) cameras as snapshots and clamps their refresh interval', () => {
+    assert.equal(utils.isSnapshotUrl('http://camera/snap.jpg'), true);
+    assert.equal(utils.isSnapshotUrl(' HTTPS://camera/snap.png'), true);
+    assert.equal(utils.isSnapshotUrl('rtsp://camera/live'), false);
+    assert.equal(utils.isSnapshotUrl(undefined), false);
+    assert.equal(utils.cameraKindLabel('https://camera/snap.jpg'), 'HTTPS snapshot');
+    assert.equal(utils.cameraKindLabel('http://camera/snap.jpg'), 'HTTP snapshot');
+    assert.equal(utils.cameraKindLabel('rtsps://camera/live'), 'RTSPS stream');
+    assert.equal(utils.snapshotIntervalMs(undefined), 30000);
+    assert.equal(utils.snapshotIntervalMs(60), 60000);
+    assert.equal(utils.snapshotIntervalMs(1), 5000);
+    assert.equal(utils.snapshotIntervalMs(99999), 600000);
 });
 
 test('normalizes malformed settings and duplicate IDs without restoring deleted cameras', () => {

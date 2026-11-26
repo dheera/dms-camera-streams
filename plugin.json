@@ -1,7 +1,7 @@
 {
     "id": "cameraStreams",
     "name": "Camera Streams",
-    "description": "Live RTSP and RTSPS cameras in your Dux Modular Shell bar",
+    "description": "Live RTSP/RTSPS cameras and HTTP(S) snapshot cameras in your Dux Modular Shell bar",
     "version": "1.1.0",
     "author": "Dheera",
     "type": "widget",

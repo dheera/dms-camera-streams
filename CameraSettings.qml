@@ -139,7 +139,7 @@ PluginSettings {
                 id: emptyLabel
                 anchors.centerIn: parent
                 width: parent.width - Theme.spacingL * 2
-                text: "No cameras yet. Add a name and an RTSP or RTSPS stream URL below."
+                text: "No cameras yet. Add a name and an RTSP stream or HTTP snapshot URL below."
                 color: Theme.surfaceVariantText
                 font.pixelSize: Theme.fontSizeSmall
                 wrapMode: Text.WordWrap
@@ -189,7 +189,7 @@ PluginSettings {
 
                         StyledText {
                             width: parent.width
-                            text: /^rtsps:/i.test(cameraCard.modelData.url) ? "RTSPS stream" : "RTSP stream"
+                            text: StreamUtils.cameraKindLabel(cameraCard.modelData.url)
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.surfaceVariantText
                         }
@@ -280,7 +280,7 @@ PluginSettings {
                 }
 
                 StyledText {
-                    text: "Stream URL"
+                    text: "Stream or image URL"
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                 }
@@ -289,7 +289,7 @@ PluginSettings {
                     id: urlField
                     width: parent.width
                     Accessible.name: "Camera stream URL"
-                    placeholderText: "rtsp:// or rtsps://"
+                    placeholderText: "rtsp://, rtsps://, http:// or https://"
                     echoMode: TextInput.Password
                     showPasswordToggle: true
                     maximumLength: 8192
@@ -298,7 +298,7 @@ PluginSettings {
 
                 StyledText {
                     width: parent.width
-                    text: "Paste the complete stream URL, including any query parameters. URLs are saved locally in DMS plugin settings."
+                    text: "Paste the complete URL, including any query parameters. RTSP URLs play live video; HTTP(S) URLs must return a JPEG or PNG, refreshed while the viewer is open. URLs are saved locally in DMS plugin settings."
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     wrapMode: Text.WordWrap
@@ -362,5 +362,15 @@ PluginSettings {
         maximum: 960
         defaultValue: 640
         unit: "px"
+    }
+
+    SliderSetting {
+        settingKey: "snapshotInterval"
+        label: "Snapshot refresh interval"
+        description: "How often HTTP(S) image cameras reload while the viewer is open."
+        minimum: 5
+        maximum: 300
+        defaultValue: 30
+        unit: "s"
     }
 }

@@ -13,6 +13,9 @@ PanelWindow {
     property string streamUrl: ""
     property bool muted: true
     property bool autoReconnect: true
+    property bool isSnapshot: false
+    property string playerSource: Qt.resolvedUrl("./CameraPlayer.qml")
+    property int snapshotInterval: 30000
     property bool multipleCameras: false
     property bool stopped: false
     readonly property var player: playerLoader.item
@@ -72,9 +75,11 @@ PanelWindow {
             id: playerLoader
             anchors.fill: parent
             active: root.visible && root.streamUrl !== ""
-            source: Qt.resolvedUrl("./CameraPlayer.qml")
+            source: root.playerSource
             onLoaded: {
                 item.streamUrl = Qt.binding(() => root.streamUrl);
+                if (item.isSnapshot)
+                    item.refreshInterval = Qt.binding(() => root.snapshotInterval);
                 item.muted = Qt.binding(() => root.muted);
                 item.autoReconnect = Qt.binding(() => root.autoReconnect);
                 item.active = Qt.binding(() => root.visible && !root.stopped);
@@ -170,6 +175,7 @@ PanelWindow {
                         iconName: root.muted ? "volume_off" : "volume_up"
                         iconColor: "#f2f4f8"
                         tooltipText: root.muted ? "Unmute (M)" : "Mute (M)"
+                        visible: !root.isSnapshot
                         onClicked: root.muteRequested()
                     }
                     DActionButton {
@@ -181,7 +187,7 @@ PanelWindow {
                     DActionButton {
                         iconName: "refresh"
                         iconColor: "#f2f4f8"
-                        tooltipText: "Reconnect"
+                        tooltipText: root.isSnapshot ? "Refresh now" : "Reconnect"
                         onClicked: root.retry()
                     }
                     DButton {

@@ -22,6 +22,9 @@ PluginComponent {
     property bool returningFromFullscreen: false
     readonly property var fullscreenViewer: fullscreenView
     readonly property bool autoReconnect: pluginData.autoReconnect ?? true
+    readonly property bool isSnapshot: StreamUtils.isSnapshotUrl(camera?.url)
+    readonly property int snapshotInterval: StreamUtils.snapshotIntervalMs(pluginData.snapshotInterval)
+    readonly property string playerSource: Qt.resolvedUrl(isSnapshot ? "./SnapshotPlayer.qml" : "./CameraPlayer.qml")
     readonly property real desiredWidth: Math.max(480, Math.min(960, Number(pluginData.previewWidth) || 640))
     popoutWidth: Math.min(desiredWidth, Math.max(320, (parentScreen?.width || 1920) - 32))
 
@@ -38,7 +41,7 @@ PluginComponent {
     }
 
     function openInMpv() {
-        if (!camera)
+        if (!camera || isSnapshot)
             return;
         Quickshell.execDetached(StreamUtils.mpvArguments(camera, muted));
         closePopout();
@@ -89,6 +92,9 @@ PluginComponent {
         streamUrl: root.camera?.url || ""
         muted: root.muted
         autoReconnect: root.autoReconnect
+        isSnapshot: root.isSnapshot
+        playerSource: root.playerSource
+        snapshotInterval: root.snapshotInterval
         multipleCameras: root.cameras.length > 1
         onExitRequested: root.exitFullscreen()
         onMuteRequested: root.muted = !root.muted
@@ -220,9 +226,11 @@ PluginComponent {
                         id: playerLoader
                         anchors.fill: parent
                         active: panel.opened && !root.fullscreenOpen && root.camera !== null
-                        source: Qt.resolvedUrl("./CameraPlayer.qml")
+                        source: root.playerSource
                         onLoaded: {
                             item.streamUrl = Qt.binding(() => root.camera?.url || "");
+                            if (item.isSnapshot)
+                                item.refreshInterval = Qt.binding(() => root.snapshotInterval);
                             item.muted = Qt.binding(() => root.muted);
                             item.autoReconnect = Qt.binding(() => root.autoReconnect);
                             item.active = Qt.binding(() => panel.shouldPlay);
@@ -291,7 +299,7 @@ PluginComponent {
                                 anchors.verticalCenter: parent.verticalCenter
                             }
                             StyledText {
-                                text: "LIVE"
+                                text: panel.player?.badgeText || "LIVE"
                                 color: "white"
                                 font.pixelSize: 10
                                 font.weight: Font.Bold
@@ -345,6 +353,7 @@ PluginComponent {
                         DActionButton {
                             iconName: root.muted ? "volume_off" : "volume_up"
                             tooltipText: root.muted ? "Unmute camera" : "Mute camera"
+                            visible: !root.isSnapshot
                             onClicked: root.muted = !root.muted
                         }
                         DActionButton {
@@ -354,7 +363,7 @@ PluginComponent {
                         }
                         DActionButton {
                             iconName: "refresh"
-                            tooltipText: "Reconnect"
+                            tooltipText: root.isSnapshot ? "Refresh now" : "Reconnect"
                             onClicked: {
                                 panel.stopped = false;
                                 panel.player?.retry();
@@ -378,7 +387,7 @@ PluginComponent {
                         text: "Open in mpv"
                         iconName: "open_in_new"
                         variant: "tonal"
-                        visible: root.camera !== null
+                        visible: root.camera !== null && !root.isSnapshot
                         onClicked: root.openInMpv()
                     }
                     DButton {

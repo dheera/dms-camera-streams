@@ -366,7 +366,7 @@ def main():
         def sanitize(output):
             if secret_url:
                 output = output.replace(secret_url, "[camera URL]")
-            return re.sub(r"rtsps?://[^\s\"']+", "[camera URL]", output)
+            return re.sub(r"(?:rtsps?|https?)://[^\s\"']+", "[camera URL]", output)
         try:
             result = subprocess.run(
                 [quickshell, "-p", str(root), "--no-color"], env=env,
@@ -379,7 +379,7 @@ def main():
             return 1
         output = sanitize(result.stdout)
         plugin_errors = [line for line in output.splitlines() if re.search(
-            r"(?:Camera(?:Widget|Settings|Player|Fullscreen)\.qml|StreamUtils\.js).*"
+            r"(?:Camera(?:Widget|Settings|Player|Fullscreen)\.qml|SnapshotPlayer\.qml|StreamUtils\.js).*"
             r"(?:Error|Cannot|Unable|Binding loop|not defined)", line)]
         passed = result.returncode == 0 and "CAMERA_SMOKE_PASS:" in output and not plugin_errors and "CAMERA_SMOKE_FAIL:" not in output
         if args.verbose or not passed:

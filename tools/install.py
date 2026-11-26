@@ -7,7 +7,7 @@ from pathlib import Path
 import tempfile
 
 SOURCE = Path(__file__).resolve().parent.parent
-FILES = ("plugin.json", "CameraWidget.qml", "CameraPlayer.qml", "CameraFullscreen.qml", "CameraSettings.qml", "StreamUtils.js")
+FILES = ("plugin.json", "CameraWidget.qml", "CameraPlayer.qml", "CameraFullscreen.qml", "SnapshotPlayer.qml", "CameraSettings.qml", "StreamUtils.js")
 
 
 def install(destination, include_local=True):

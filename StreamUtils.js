@@ -4,11 +4,29 @@ function validateCamera(name, url) {
     if (typeof name !== "string" || !name.trim())
         return "Give this camera a name.";
     if (typeof url !== "string" || !url.trim())
-        return "Enter an RTSP or RTSPS stream URL.";
+        return "Enter an RTSP stream URL or an HTTP snapshot image URL.";
     // Require a host; reject whitespace/control characters without rewriting tokens.
-    if (!/^rtsps?:\/\/(?:[^\s\/@]+@)?(?:\[[0-9a-fA-F:]+\]|[^\s\/:?#@]+)(?::[0-9]+)?(?:[\/?#][^\s]*)?$/i.test(url.trim()))
-        return "Use a complete rtsp:// or rtsps:// URL. Encode spaces as %20.";
+    if (!/^(?:rtsps?|https?):\/\/(?:[^\s\/@]+@)?(?:\[[0-9a-fA-F:]+\]|[^\s\/:?#@]+)(?::[0-9]+)?(?:[\/?#][^\s]*)?$/i.test(url.trim()))
+        return "Use a complete rtsp://, rtsps://, http:// or https:// URL. Encode spaces as %20.";
     return "";
+}
+
+// HTTP(S) cameras serve a still JPEG/PNG that is re-fetched periodically.
+function isSnapshotUrl(url) {
+    return typeof url === "string" && /^https?:/i.test(url.trim());
+}
+
+function cameraKindLabel(url) {
+    if (isSnapshotUrl(url))
+        return /^https:/i.test(url.trim()) ? "HTTPS snapshot" : "HTTP snapshot";
+    return /^rtsps:/i.test(url.trim()) ? "RTSPS stream" : "RTSP stream";
+}
+
+function snapshotIntervalMs(seconds) {
+    var value = Number(seconds);
+    if (!isFinite(value) || value <= 0)
+        value = 30;
+    return Math.round(Math.max(5, Math.min(600, value)) * 1000);
 }
 
 function normalizeCameras(value) {
