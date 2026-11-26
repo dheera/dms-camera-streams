@@ -154,6 +154,10 @@ PluginComponent {
             readonly property bool opened: parentPopout?.shouldBeVisible ?? false
             readonly property bool shouldPlay: opened && !root.fullscreenOpen && !stopped && !SessionService.locked && root.camera !== null
             readonly property var player: playerLoader.item
+            // Screen height left for the picker and video after the fixed rows.
+            readonly property real contentSpace: (root.parentScreen?.height || 1080) - root.barThickness - root.barSpacing
+                - headerHeight - (cameraInfo.visible ? cameraInfo.height : 0) - footer.implicitHeight
+                - Theme.spacingM * 4 - 64
 
             onOpenedChanged: {
                 if (opened) {
@@ -185,7 +189,8 @@ PluginComponent {
                 Flickable {
                     id: picker
                     width: parent.width
-                    height: Math.min(cameraButtons.implicitHeight, 100)
+                    // Show every camera button; scroll only if the video would drop below 180px.
+                    height: Math.min(cameraButtons.implicitHeight, Math.max(100, panel.contentSpace - 180))
                     contentWidth: width
                     contentHeight: cameraButtons.implicitHeight
                     clip: true
@@ -214,10 +219,7 @@ PluginComponent {
                     id: viewport
                     width: parent.width
                     height: Math.min(width * 9 / 16, Math.max(100,
-                        (root.parentScreen?.height || 1080) - root.barThickness - root.barSpacing
-                        - panel.headerHeight - (picker.visible ? picker.height : 0)
-                        - (cameraInfo.visible ? cameraInfo.height : 0) - footer.implicitHeight
-                        - Theme.spacingM * 4 - 64))
+                        panel.contentSpace - (picker.visible ? picker.height : 0)))
                     color: "#090c10"
                     radius: Theme.cornerRadius
                     clip: true
